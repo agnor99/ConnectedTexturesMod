@@ -2,25 +2,28 @@ buildscript {
     repositories {
         mavenCentral()
         maven {
-            name = "forge"
+            name = 'forge'
             url = 'https://maven.minecraftforge.net'
         }
         maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+            name = 'sonatype'
+            url = "https://oss.sonatype.org/content/repositories/releases/"
         }
+
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+'
-        classpath 'org.ajoberstar:gradle-git:0.10.1'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.ajoberstar:gradle-git:1.7.2'
     }
 }
+
 plugins {
-    id "io.freefair.lombok" version "4.1.5"
+    id "io.freefair.lombok" version "6.3.0"
     id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
-apply plugin: 'eclipse'
+
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 import org.ajoberstar.grgit.Grgit
@@ -33,14 +36,15 @@ boolean dev = System.getenv('RELEASE') == null || System.getenv('RELEASE').equal
 ext.buildnumber = 0
 project.buildnumber = System.getenv('BUILD_NUMBER') != null ? System.getenv('BUILD_NUMBER') : project.ext.gitHash
 
-version = "${minecraft_version}-${mod_version}"
-group = "team.chisel.ctm" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = dev ? "CTM_DEV" : "CTM"
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+version = '${minecraft_version}-${mod_version}'
+group = 'team.chisel.ctm' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = dev ? "CTM_DEV" : 'CTM'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(java_version)
 
 minecraft {
-    mappings channel: 'official', version: '1.18'
-    
+    mappings channel: 'official', version: '1.18.1'
+
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     // default run configurations.
@@ -49,6 +53,9 @@ minecraft {
         client {
             taskName 'ctm_client'
             workingDirectory project.file('run')
+
+
+            property 'forge.logging.markers', 'REGISTRIES'
 
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
@@ -64,9 +71,22 @@ minecraft {
         server {
             taskName 'ctm_server'
             workingDirectory project.file('run')
-
-            // Recommended logging level for the console
+            property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+
+            mods {
+                ctm {
+                    source sourceSets.main
+                    source sourceSets.test
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            args '--mod', 'ctm', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
                 ctm {
@@ -89,7 +109,7 @@ processResources {
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'META_INF/mods.toml'
-                
+
         // replace version and mcversion
         expand 'version':project.version, 'mcversion': minecraft_version
     }
@@ -102,15 +122,19 @@ processResources {
 
 jar {
     manifest {
-        attributes(["Specification-Title": "ctm",
-                    "Specification-Vendor": "chisel-team",
-                    "Specification-Version": "25.0", // We are version 1 of the modlauncher specification
-                    "Implementation-Title": project.name,
-                    "Implementation-Version": "${version}",
-                    "Implementation-Vendor" :"chisel-team",
-                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")],)
+        attributes([
+                "Specification-Title": mod_id,
+                "Specification-Vendor": "chisel-team",
+                "Specification-Version": "25.0",
+                "Implementation-Title": "${project.name}",
+                'Implementation-Version': "${version}",
+                "Implementation-Vendor" :"chisel-team",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
     }
 }
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     mavenLocal()
@@ -132,6 +156,8 @@ task apiJar(type: Jar) {
     classifier = 'api'
 }
 
+jar.finalizedBy('reobfJar')
+
 publishing {
     tasks.publish.dependsOn 'build'
     publications {
@@ -142,7 +168,6 @@ publishing {
             artifact apiJar
         }
     }
-
     repositories {
         if (project.hasProperty('mavendir')) {
             maven { url mavendir }
@@ -182,7 +207,7 @@ String getChangelogText() {
 }
 
 tasks.curseforge.enabled = !dev && project.hasProperty('curseforge_key')
-    
+
 curseforge {
     if (project.hasProperty('curseforge_key')) {
         apiKey = project.curseforge_key
@@ -196,8 +221,7 @@ curseforge {
         mainArtifact(jar) {
             displayName = "CTM - ${version}"
         }
-		addGameVersion '1.16.2'
-		addGameVersion '1.16.3'
-		addGameVersion '1.16.4'
+        addGameVersion '1.18'
+        addGameVersion '1.18.1'
     }
 }

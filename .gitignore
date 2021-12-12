@@ -1,29 +1,26 @@
-/download
-/eclipseBin
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
 
-## gradle
-/.gradle
-/build
-
-## ForgeGradle
-/run
-/*.launch
-
-## eclipse
-/eclipse
-/.metadata
-/.classpath
-/.project
-/bin
-
-## intellij
-/out
-/.idea
-/*.iml
-/*.ipr
-/*.iws
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
 /atlassian-ide-plugin.xml
 
-## gedit
-*~
-/lombok.config
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
+
+# Files from Forge MDK
+forge*changelog.txt
