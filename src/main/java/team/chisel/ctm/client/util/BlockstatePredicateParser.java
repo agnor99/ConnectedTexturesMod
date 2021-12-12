@@ -82,10 +82,10 @@ public class BlockstatePredicateParser {
     
     @Value
     class PropertyPredicate<T extends Comparable<T>> implements Predicate<BlockState> {
-        private Block block;
-        private Property<T> prop;
-        private T value;
-        private ComparisonType type;
+        Block block;
+        Property<T> prop;
+        T value;
+        ComparisonType type;
         
         @Override
         public boolean test(BlockState t) {
@@ -95,9 +95,9 @@ public class BlockstatePredicateParser {
     
     @Value
     static class MultiPropertyPredicate<T extends Comparable<T>> implements Predicate<BlockState> {
-        private Block block;
-        private Property<T> prop;
-        private Set<T> validValues;
+        Block block;
+        Property<T> prop;
+        Set<T> validValues;
         
         @Override
         public boolean test(BlockState t) {
@@ -107,7 +107,7 @@ public class BlockstatePredicateParser {
     
     @Value
     class BlockPredicate implements Predicate<BlockState> {
-        private Block block;
+         Block block;
         
         @Override
         public boolean test(BlockState t) {
@@ -265,7 +265,7 @@ public class BlockstatePredicateParser {
                 PredicateMap ret = new PredicateMap();
                 ret.predicates.putAll(context.deserialize(obj, MAP_TYPE));
                 for (Direction dir : Direction.values()) {
-                    ret.predicates.putIfAbsent(dir, Optional.ofNullable(predicateDeserializer.defaultPredicate.get()).orElse(predicateDeserializer.EMPTY));
+                    ret.predicates.putIfAbsent(dir, Optional.ofNullable(predicateDeserializer.defaultPredicate.get()).orElse(PredicateDeserializer.EMPTY));
                 }
                 predicateDeserializer.defaultPredicate.remove();
                 return ret;

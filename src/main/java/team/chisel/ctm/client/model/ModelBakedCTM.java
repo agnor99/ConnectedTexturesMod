@@ -57,7 +57,7 @@ public class ModelBakedCTM extends AbstractCTMBakedModel {
                 }
                 
                 // Linked to maintain the order of quads
-                Map<BakedQuad, ICTMTexture<?>> texturemap = new LinkedHashMap<>();
+                Map<BakedQuad, ICTMTexture<?>> textureMap = new LinkedHashMap<>();
                 // Gather all quads and map them to their textures
                 // All quads should have an associated ICTMTexture, so ignore any that do not
                 for (BakedQuad q : parentQuads) {
@@ -72,15 +72,15 @@ public class ModelBakedCTM extends AbstractCTMBakedModel {
                             q = new BakedQuadRetextured(q, spriteReplacement);
                         }
 
-                        texturemap.put(q, tex);
+                        textureMap.put(q, tex);
                     }
                 }
 
                 // Compute the quad goal for a given facing
                 // TODO this means that non-culling (null facing) quads will *all* share the same quad goal, which is excessive
                 // Explore optimizations to quad goal (detecting overlaps??)
-                int quadGoal = ctx == null ? 1 : texturemap.values().stream().mapToInt(tex -> tex.getType().getQuadsPerSide()).max().orElse(1);
-                for (Entry<BakedQuad, ICTMTexture<?>> e : texturemap.entrySet()) {
+                int quadGoal = ctx == null ? 1 : textureMap.values().stream().mapToInt(tex -> tex.getType().getQuadsPerSide()).max().orElse(1);
+                for (Entry<BakedQuad, ICTMTexture<?>> e : textureMap.entrySet()) {
                     // If the layer is null, this is a wrapped vanilla texture, so passthrough the layer check to the block
                     if ((e.getValue().getLayer() != null && e.getValue().getLayer().getRenderType() == layer) || (e.getValue().getLayer() == null && (state == null || CTMPackReloadListener.canRenderInLayerFallback(state, layer)))) {
                         ITextureContext tcx = ctx == null ? null : ctx.getRenderContext(e.getValue());

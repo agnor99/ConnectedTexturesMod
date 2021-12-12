@@ -121,7 +121,7 @@ public class CTMLogic {
     // @formatter:on
 
 	/** Some hardcoded offset values for the different corner indeces */
-	protected static int[] submapOffsets = { 4, 5, 1, 0 };
+	protected static int[] subMapOffsets = { 4, 5, 1, 0 };
 
 	public Optional<Boolean> disableObscuredFaceCheck = Optional.empty();
 
@@ -134,7 +134,7 @@ public class CTMLogic {
 	};
 	
 	protected byte connectionMap;
-	protected int[] submapCache = new int[] { 18, 19, 17, 16 };
+	protected int[] subMapCache = new int[] { 18, 19, 17, 16 };
 	
 	@Getter
 	@Setter
@@ -150,39 +150,39 @@ public class CTMLogic {
 
 	/**
 	 * @return The indeces of the typical 4x4 submap to use for the given face at the given location.
-	 * 
+	 *
 	 *         Indeces are in counter-clockwise order starting at bottom left.
 	 */
     public int[] createSubmapIndices(@Nullable BlockGetter world, BlockPos pos, Direction side) {
 		if (world == null) {
-            return submapCache;
+            return subMapCache;
         }
 
 		buildConnectionMap(world, pos, side);
 
 		// Map connections to submap indeces
 		for (int i = 0; i < 4; i++) {
-			fillSubmaps(i);
+			fillSubMaps(i);
 		}
 
-		return submapCache;
+		return subMapCache;
 	}
 
 	public int[] createSubmapIndices(long data, Direction side){
-		submapCache = new int[] { 18, 19, 17, 16 };
+		subMapCache = new int[] { 18, 19, 17, 16 };
 
 		buildConnectionMap(data, side);
 
 		// Map connections to submap indeces
 		for (int i = 0; i < 4; i++) {
-			fillSubmaps(i);
+			fillSubMaps(i);
 		}
 
-		return submapCache;
+		return subMapCache;
 	}
     
-    public int[] getSubmapIndices() {
-        return submapCache;
+    public int[] getSubMapIndices() {
+        return subMapCache;
     }
     
     public long serialized() {
@@ -233,19 +233,19 @@ public class CTMLogic {
     }
 
 	@SuppressWarnings("null")
-    protected void fillSubmaps(int idx) {
+    protected void fillSubMaps(int idx) {
 		Dir[] dirs = submapMap[idx];
 		if (connectedOr(dirs[0], dirs[1])) {
 			if (connectedAnd(dirs)) {
 				// If all dirs are connected, we use the fully connected face,
 				// the base offset value.
-			    submapCache[idx] = submapOffsets[idx];
+			    subMapCache[idx] = subMapOffsets[idx];
 			} else {
 				// This is a bit magic-y, but basically the array is ordered so
 				// the first dir requires an offset of 2, and the second dir
 				// requires an offset of 8, plus the initial offset for the
 				// corner.
-			    submapCache[idx] = submapOffsets[idx] + (connected(dirs[0]) ? 2 : 0) + (connected(dirs[1]) ? 8 : 0);
+			    subMapCache[idx] = subMapOffsets[idx] + (connected(dirs[0]) ? 2 : 0) + (connected(dirs[1]) ? 8 : 0);
 			}
 		}
 	}

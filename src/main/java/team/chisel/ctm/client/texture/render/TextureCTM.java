@@ -2,14 +2,11 @@ package team.chisel.ctm.client.texture.render;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -95,16 +92,16 @@ public class TextureCTM<T extends TextureTypeCTM> extends AbstractTexture<T> {
     
     public boolean connectTo(CTMLogic ctm, BlockState from, BlockState to, Direction dir) {
         try {
-        	Object2ByteMap<BlockState> sidecache = connectionCache.get(new CacheKey(from, dir), 
+        	Object2ByteMap<BlockState> sideCache = connectionCache.get(new CacheKey(from, dir),
 				() -> {
 					Object2ByteMap<BlockState> map = new Object2ByteOpenCustomHashMap<>(new IdentityStrategy<>());
 					map.defaultReturnValue((byte) -1);
 					return map;
 				});
 
-        	byte cached = sidecache.getByte(to);
+        	byte cached = sideCache.getByte(to);
             if (cached == -1) {
-                sidecache.put(to, cached = (byte) ((connectionChecks == null ? StateComparisonCallback.DEFAULT.connects(ctm, from, to, dir) : connectionChecks.test(dir, to)) ? 1 : 0));
+                sideCache.put(to, cached = (byte) ((connectionChecks == null ? StateComparisonCallback.DEFAULT.connects(ctm, from, to, dir) : connectionChecks.test(dir, to)) ? 1 : 0));
             }
             return cached == 1;
         } catch (ExecutionException e) {
@@ -121,7 +118,7 @@ public class TextureCTM<T extends TextureTypeCTM> extends AbstractTexture<T> {
 
         Quad[] quads = quad.subdivide(4);
         
-        int[] ctm = ((TextureContextCTM)context).getCTM(bq.getDirection()).getSubmapIndices();
+        int[] ctm = ((TextureContextCTM)context).getCTM(bq.getDirection()).getSubMapIndices();
         
         for (int i = 0; i < quads.length; i++) {
             Quad q = quads[i];
@@ -130,7 +127,7 @@ public class TextureCTM<T extends TextureTypeCTM> extends AbstractTexture<T> {
                 quads[i] = q.grow().transformUVs(sprites[ctm[ctmid] > 15 ? 0 : 1], CTMLogic.uvs[ctm[ctmid]].normalize());
             }
         }
-        return Arrays.stream(quads).filter(Objects::nonNull).map(q -> q.rebake()).toList();
+        return Arrays.stream(quads).filter(Objects::nonNull).map(Quad::rebake).toList();
     }
     
     @Override

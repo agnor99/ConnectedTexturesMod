@@ -19,16 +19,16 @@ public class TextureTypeEldritch implements ITextureType {
 
     public static class Context extends TextureContextPosition {
 
-        private final BlockPos wrappedpos;
+        private final BlockPos wrappedPos;
 
         public Context(BlockPos pos) {
             super(pos);
-            wrappedpos = new BlockPos(pos.getX() & 7, pos.getY() & 7, pos.getZ() & 7);
+            wrappedPos = new BlockPos(pos.getX() & 7, pos.getY() & 7, pos.getZ() & 7);
         }
 
         @Override
         public BlockPos getPosition() {
-            return wrappedpos;
+            return wrappedPos;
         }
 
         @Override

@@ -2,11 +2,7 @@ package team.chisel.ctm.client.util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 
@@ -45,7 +41,7 @@ public enum TextureMetadataHandler {
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onTextureStitch(TextureStitchEvent.Pre event) {
-    	Set<ResourceLocation> sprites = new HashSet<>(ObfuscationReflectionHelper.getPrivateValue(TextureStitchEvent.Pre.class, event, "sprites"));
+    	Set<ResourceLocation> sprites = new HashSet<>(Objects.requireNonNull(ObfuscationReflectionHelper.getPrivateValue(TextureStitchEvent.Pre.class, event, "sprites")));
         for (ResourceLocation rel : sprites) {
             try {
                 rel = new ResourceLocation(rel.getNamespace(), "textures/" + rel.getPath() + ".png");
@@ -53,13 +49,13 @@ public enum TextureMetadataHandler {
                 if (metadata != null) {
                     // Load proxy data
                     if (metadata.getProxy() != null) {
-                        ResourceLocation proxysprite = new ResourceLocation(metadata.getProxy());
-                        IMetadataSectionCTM proxymeta = ResourceUtil.getMetadata(ResourceUtil.spriteToAbsolute(proxysprite));
+                        ResourceLocation proxySprite = new ResourceLocation(metadata.getProxy());
+                        IMetadataSectionCTM proxyMeta = ResourceUtil.getMetadata(ResourceUtil.spriteToAbsolute(proxySprite));
                         // Load proxy's base sprite
-                        event.addSprite(proxysprite);
-                        if (proxymeta != null) {
+                        event.addSprite(proxySprite);
+                        if (proxyMeta != null) {
                             // Load proxy's additional textures
-                            for (ResourceLocation r : proxymeta.getAdditionalTextures()) {
+                            for (ResourceLocation r : proxyMeta.getAdditionalTextures()) {
                             	if (registeredTextures.add(r)) {
                             		event.addSprite(r);
                             	}
@@ -182,9 +178,9 @@ public enum TextureMetadataHandler {
     }
 
     private @Nonnull BakedModel wrap(ResourceLocation loc, UnbakedModel model, BakedModel object, ForgeModelBakery loader) throws IOException {
-        ModelCTM modelchisel = new ModelCTM(model);
-        modelchisel.initializeTextures(loader, m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(m.texture()));
-        return new ModelBakedCTM(modelchisel, object); 	
+        ModelCTM modelChisel = new ModelCTM(model);
+        modelChisel.initializeTextures(loader, m -> Minecraft.getInstance().getTextureAtlas(m.atlasLocation()).apply(m.texture()));
+        return new ModelBakedCTM(modelChisel, object);
     }
 
     public void invalidateCaches() {

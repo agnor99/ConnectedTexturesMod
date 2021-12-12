@@ -15,7 +15,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -51,6 +50,7 @@ import net.minecraftforge.client.model.data.IDynamicBakedModel;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
+import org.jetbrains.annotations.NotNull;
 import team.chisel.ctm.api.model.IModelCTM;
 import team.chisel.ctm.api.texture.ICTMTexture;
 import team.chisel.ctm.api.util.RenderContextList;
@@ -60,13 +60,13 @@ import team.chisel.ctm.client.util.ProfileUtil;
 @RequiredArgsConstructor
 public abstract class AbstractCTMBakedModel implements IDynamicBakedModel {
 
-    private static Cache<ModelResourceLocation, AbstractCTMBakedModel> itemcache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).<ModelResourceLocation, AbstractCTMBakedModel>build();
-    private static Cache<State, AbstractCTMBakedModel> modelcache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).maximumSize(5000).<State, AbstractCTMBakedModel>build();
+    private static final Cache<ModelResourceLocation, AbstractCTMBakedModel> itemCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).<ModelResourceLocation, AbstractCTMBakedModel>build();
+    private static final Cache<State, AbstractCTMBakedModel> modelCache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).maximumSize(5000).<State, AbstractCTMBakedModel>build();
 
     public static void invalidateCaches()
     {
-        itemcache.invalidateAll();
-        modelcache.invalidateAll();
+        itemCache.invalidateAll();
+        modelCache.invalidateAll();
     }
 
     @ParametersAreNonnullByDefault
@@ -91,7 +91,7 @@ public abstract class AbstractCTMBakedModel implements IDynamicBakedModel {
             }
             Random random = new Random();
             random.setSeed(42L);
-            return itemcache.get(mrl, () -> createModel(state, model, getParent(random), null, random));
+            return itemCache.get(mrl, () -> createModel(state, model, getParent(random), null, random));
         }
     }
     
@@ -168,20 +168,18 @@ public abstract class AbstractCTMBakedModel implements IDynamicBakedModel {
         try {
 	        if (Minecraft.getInstance().level != null && extraData.hasProperty(CTM_CONTEXT)) {
 	            ProfileUtil.start("state_creation");
-	            RenderContextList ctxList = extraData.getData(CTM_CONTEXT).getContextList(state, baked);
+	            RenderContextList ctxList = Objects.requireNonNull(extraData.getData(CTM_CONTEXT)).getContextList(state, baked);
 	
 	            Object2LongMap<ICTMTexture<?>> serialized = ctxList.serialized();
 	            ProfileUtil.endAndStart("model_creation");
-	            baked = modelcache.get(new State(state, serialized, parent), () -> createModel(state, model, parent, ctxList, rand));
+	            baked = modelCache.get(new State(state, serialized, parent), () -> createModel(state, model, parent, ctxList, rand));
 	            ProfileUtil.end();
 	        } else if (state != null)  {
 	            ProfileUtil.start("model_creation");
-	            baked = modelcache.get(new State(state, null, parent), () -> createModel(state, model, parent, null, rand));
+	            baked = modelCache.get(new State(state, null, parent), () -> createModel(state, model, parent, null, rand));
 	            ProfileUtil.end();
-	        } else {
-	            // This SHOULD be invalid, but apparently forge doesn't call getModelData when rendering items. Moving this check to be more specific below
-	            // throw new IllegalArgumentException("getQuads called without state and without going through overrides, this is not valid!");
-	        }
+	        }  // This SHOULD be invalid, but apparently forge doesn't call getModelData when rendering items. Moving this check to be more specific below
+            // throw new IllegalArgumentException("getQuads called without state and without going through overrides, this is not valid!");
         } catch (ExecutionException e) {
         	throw new RuntimeException(e);
         }

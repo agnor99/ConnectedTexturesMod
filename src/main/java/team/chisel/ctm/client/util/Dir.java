@@ -197,38 +197,27 @@ public enum Dir {
         }
 
         if (facing.getAxis() != axis) {
-            switch (axis) {
-            case X:
-                // Inverted results from Direction#rotateX
-                switch (facing) {
-                case NORTH:
-                    return UP;
-                case DOWN:
-                    return NORTH;
-                case SOUTH:
-                    return DOWN;
-                case UP:
-                    return SOUTH;
-                default:
-                    return facing; // Invalid but ignored
-                }
-            case Y:
-                return facing.getCounterClockWise();
-            case Z:
-                // Inverted results from Direction#rotateZ
-                switch (facing) {
-                case EAST:
-                    return EAST;
-                case WEST:
-                    return WEST;
-                case UP:
-                    return DOWN;
-                case DOWN:
-                    return UP;
-                default:
-                    return facing; // invalid but ignored
-                }
-            }
+            return switch (axis) {
+                case X ->
+                        // Inverted results from Direction#rotateX
+                        switch (facing) {
+                            case NORTH -> UP;
+                            case DOWN -> NORTH;
+                            case SOUTH -> DOWN;
+                            case UP -> SOUTH;
+                            default -> facing; // Invalid but ignored
+                        };
+                case Y -> facing.getCounterClockWise();
+                case Z ->
+                        // Inverted results from Direction#rotateZ
+                        switch (facing) {
+                            case EAST -> EAST;
+                            case WEST -> WEST;
+                            case UP -> DOWN;
+                            case DOWN -> UP;
+                            default -> facing; // invalid but ignored
+                        };
+            };
         }
 
         return facing;

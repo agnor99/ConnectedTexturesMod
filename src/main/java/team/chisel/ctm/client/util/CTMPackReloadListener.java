@@ -18,6 +18,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.server.packs.resources.SimpleReloadableResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -108,7 +109,7 @@ public class CTMPackReloadListener extends SimplePreparableReloadListener<Unit> 
             return layer -> ctmModel.getModel().canRenderInLayer(state, layer);
         }
         if (model instanceof WeightedBakedModel weightedModel) {
-            return CachingLayerCheck.of(state, weightedModel.list, wm -> wm.getData());
+            return CachingLayerCheck.of(state, weightedModel.list, WeightedEntry.Wrapper::getData);
         }
         if (model instanceof MultiPartBakedModel multiPartModel) {
             return CachingLayerCheck.of(state, multiPartModel.selectors, Pair::getRight);

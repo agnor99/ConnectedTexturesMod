@@ -27,7 +27,7 @@ import team.chisel.ctm.api.texture.TextureType;
 @UtilityClass
 public class TextureTypeRegistry {
 
-    private static Map<String, ITextureType> map = Maps.newHashMap();
+    private static final Map<String, ITextureType> map = Maps.newHashMap();
 
     @SuppressWarnings("unchecked")
     public static void scan() {

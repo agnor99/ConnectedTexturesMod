@@ -40,8 +40,8 @@ import team.chisel.ctm.client.util.ResourceUtil;
 
 public class ModelCTM implements IModelCTM {
     
-    private final UnbakedModel vanillamodel;
-    private final @Nullable BlockModel modelinfo;
+    private final UnbakedModel vanillaModel;
+    private final @Nullable BlockModel modelInfo;
 
     // Populated from overrides data during construction
     private final Int2ObjectMap<JsonElement> overrides;
@@ -55,18 +55,18 @@ public class ModelCTM implements IModelCTM {
     
     private transient byte layers;
 
-    private Map<ResourceLocation, ICTMTexture<?>> textures = new HashMap<>();
+    private final Map<ResourceLocation, ICTMTexture<?>> textures = new HashMap<>();
     
-    public ModelCTM(UnbakedModel modelinfo) {
-        this.vanillamodel = modelinfo;
-        this.modelinfo = null;
+    public ModelCTM(UnbakedModel modelInfo) {
+        this.vanillaModel = modelInfo;
+        this.modelInfo = null;
         this.overrides = new Int2ObjectOpenHashMap<>();
         this.textureDependencies = new HashSet<>();
     }
     
-    public ModelCTM(BlockModel modelinfo, Int2ObjectMap<JsonElement> overrides) throws IOException {
-    	this.vanillamodel = modelinfo;
-    	this.modelinfo = modelinfo;
+    public ModelCTM(BlockModel modelInfo, Int2ObjectMap<JsonElement> overrides) throws IOException {
+    	this.vanillaModel = modelInfo;
+    	this.modelInfo = modelInfo;
     	this.overrides = overrides;
         this.textureDependencies = new HashSet<>();
         for (Int2ObjectMap.Entry<JsonElement> e : this.overrides.int2ObjectEntrySet()) {
@@ -97,7 +97,7 @@ public class ModelCTM implements IModelCTM {
 		List<Material> ret = textureDependencies.stream()
 				.map(rl -> new Material(TextureAtlas.LOCATION_BLOCKS, rl))
     			.collect(Collectors.toList());
-    	ret.addAll(vanillamodel.getMaterials(modelGetter, missingTextureErrors));
+    	ret.addAll(vanillaModel.getMaterials(modelGetter, missingTextureErrors));
         // Validate all texture metadata
     	for (Material tex : ret) {
             IMetadataSectionCTM meta;
@@ -124,10 +124,10 @@ public class ModelCTM implements IModelCTM {
 
 	public BakedModel bake(ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ResourceLocation modelLocation) {
         BakedModel parent;
-        if (modelinfo != null && modelinfo.getRootModel() == ModelBakery.GENERATION_MARKER) { // Apply same special case that ModelBakery does
-            return ITEM_MODEL_GENERATOR.generateBlockModel(spriteGetter, modelinfo).bake(bakery, modelinfo, spriteGetter, modelTransform, modelLocation, false);
+        if (modelInfo != null && modelInfo.getRootModel() == ModelBakery.GENERATION_MARKER) { // Apply same special case that ModelBakery does
+            return ITEM_MODEL_GENERATOR.generateBlockModel(spriteGetter, modelInfo).bake(bakery, modelInfo, spriteGetter, modelTransform, modelLocation, false);
         } else {
-            parent = vanillamodel.bake(bakery, spriteGetter, modelTransform, modelLocation);
+            parent = vanillaModel.bake(bakery, spriteGetter, modelTransform, modelLocation);
         }
         initializeTextures(bakery, spriteGetter);
         return new ModelBakedCTM(this, parent);
@@ -165,10 +165,10 @@ public class ModelCTM implements IModelCTM {
         if (textureOverrides == null) {
             textureOverrides = new HashMap<>();
             for (Int2ObjectMap.Entry<IMetadataSectionCTM> e : metaOverrides.int2ObjectEntrySet()) {
-                List<BlockElementFace> matches = modelinfo.getElements().stream().flatMap(b -> b.faces.values().stream()).filter(b -> b.tintIndex == e.getIntKey()).toList();
+                List<BlockElementFace> matches = modelInfo.getElements().stream().flatMap(b -> b.faces.values().stream()).filter(b -> b.tintIndex == e.getIntKey()).toList();
                 Multimap<Material, BlockElementFace> bySprite = HashMultimap.create();
                 // TODO 1.15 this isn't right
-                matches.forEach(part -> bySprite.put(modelinfo.textureMap.getOrDefault(part.texture.substring(1), Either.right(part.texture)).left().get(), part));
+                matches.forEach(part -> bySprite.put(modelInfo.textureMap.getOrDefault(part.texture.substring(1), Either.right(part.texture)).left().get(), part));
                 for (var e2 : bySprite.asMap().entrySet()) {
                     ResourceLocation texLoc = e2.getKey().sprite().getName();
                     TextureAtlasSprite sprite = getOverrideSprite(e.getIntKey());

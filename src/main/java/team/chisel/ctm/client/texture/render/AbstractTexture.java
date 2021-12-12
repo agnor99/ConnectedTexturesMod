@@ -2,7 +2,6 @@ package team.chisel.ctm.client.texture.render;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -43,14 +42,14 @@ public abstract class AbstractTexture<T extends ITextureType> implements ICTMTex
     protected boolean fullbright;
 
     protected boolean hasLight;
-    protected int skylight, blocklight;
+    protected int skylight, blockLight;
 
     @Deprecated
     public AbstractTexture(T type, BlockRenderLayer layer, TextureAtlasSprite... sprites) {
         this.type = type;
         this.layer = layer;
         this.sprites = sprites;
-        this.skylight = this.blocklight = 0;
+        this.skylight = this.blockLight = 0;
     }
 
     public AbstractTexture(T type, TextureInfo info) {
@@ -63,11 +62,11 @@ public abstract class AbstractTexture<T extends ITextureType> implements ICTMTex
             if (light != null) {
                 if (light.isJsonPrimitive()) {
                     this.hasLight = true;
-                    this.skylight = this.blocklight = parseLightValue(light);
+                    this.skylight = this.blockLight = parseLightValue(light);
                 } else if (light.isJsonObject()) {
                     this.hasLight = true;
                     JsonObject lightObj = light.getAsJsonObject();
-                    this.blocklight = parseLightValue(lightObj.get("block"));
+                    this.blockLight = parseLightValue(lightObj.get("block"));
                     this.skylight = parseLightValue(lightObj.get("sky"));
                 }
             }
@@ -94,7 +93,7 @@ public abstract class AbstractTexture<T extends ITextureType> implements ICTMTex
     protected Quad makeQuad(BakedQuad bq, @Nullable ITextureContext context) {
         Quad q = Quad.from(bq);
         if (hasLight) {
-            q = q.setLight(blocklight, skylight);
+            q = q.setLight(blockLight, skylight);
         } else {
             q = q.setFullbright(fullbright);
         }

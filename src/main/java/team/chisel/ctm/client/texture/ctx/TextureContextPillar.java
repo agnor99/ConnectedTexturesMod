@@ -116,8 +116,8 @@ public class TextureContextPillar implements ITextureContext {
     public static class ConnectionData {
 
         @Getter
-        private Connections connections;
-        private Map<Direction, Connections> connectionConnections = new EnumMap<>(Direction.class);
+        private final Connections connections;
+        private final Map<Direction, Connections> connectionConnections = new EnumMap<>(Direction.class);
 
         public ConnectionData(BlockGetter world, BlockPos pos) {
             connections = Connections.forPos(world, pos);
@@ -140,7 +140,7 @@ public class TextureContextPillar implements ITextureContext {
     }
 
     @Getter
-    private ConnectionData data;
+    private final ConnectionData data;
 
     private long compressedData;
     

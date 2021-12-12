@@ -56,7 +56,13 @@ public class Quad {
     public class UVs {
         
         @Getter
-        private float minU, minV, maxU, maxV;
+        private final float minU;
+        @Getter
+        private final float minV;
+        @Getter
+        private final float maxU;
+        @Getter
+        private final float maxV;
         
         @Getter
         private final TextureAtlasSprite sprite;
@@ -203,7 +209,7 @@ public class Quad {
     
     private final Builder builder;
 
-    private final int blocklight, skylight;
+    private final int blockLight, skylight;
     
     private Quad(Vector3f[] verts, Vec2[] uvs, Builder builder, TextureAtlasSprite sprite) {
         this(verts, uvs, builder, sprite, 0, 0);
@@ -214,12 +220,12 @@ public class Quad {
         this(verts, uvs, builder, sprite, fullbright ? 15 : 0, fullbright ? 15 : 0);
     }
     
-    private Quad(Vector3f[] verts, Vec2[] uvs, Builder builder, TextureAtlasSprite sprite, int blocklight, int skylight) {
+    private Quad(Vector3f[] verts, Vec2[] uvs, Builder builder, TextureAtlasSprite sprite, int blockLight, int skylight) {
         this.vertPos = verts;
         this.vertUv = uvs;
         this.builder = builder;
         this.uvs = new UVs(sprite, uvs);
-        this.blocklight = blocklight;
+        this.blockLight = blockLight;
         this.skylight = skylight;
     }
     
@@ -233,8 +239,8 @@ public class Quad {
         this(verts, uvs.vectorize(), builder, uvs.getSprite(), fullbright);
     }
     
-    private Quad(Vector3f[] verts, UVs uvs, Builder builder, int blocklight, int skylight) {
-        this(verts, uvs.vectorize(), builder, uvs.getSprite(), blocklight, skylight);
+    private Quad(Vector3f[] verts, UVs uvs, Builder builder, int blockLight, int skylight) {
+        this(verts, uvs.vectorize(), builder, uvs.getSprite(), blockLight, skylight);
     }
     
     public Vector3f getVert(int index) {
@@ -243,10 +249,10 @@ public class Quad {
     
     public Quad withVert(int index, Vector3f vert) {
         Preconditions.checkElementIndex(index, 4, "Vertex index out of range!");
-        Vector3f[] newverts = new Vector3f[4];
-        System.arraycopy(vertPos, 0, newverts, 0, newverts.length);
-        newverts[index] = vert;
-        return new Quad(newverts, getUvs(), builder, blocklight, skylight);
+        Vector3f[] newVerts = new Vector3f[4];
+        System.arraycopy(vertPos, 0, newVerts, 0, newVerts.length);
+        newVerts[index] = vert;
+        return new Quad(newVerts, getUvs(), builder, blockLight, skylight);
     }
     
     public Vec2 getUv(int index) {
@@ -255,10 +261,10 @@ public class Quad {
     
     public Quad withUv(int index, Vec2 uv) {
         Preconditions.checkElementIndex(index, 4, "UV index out of range!");
-        Vec2[] newuvs = new Vec2[4];
-        System.arraycopy(getUvs().vectorize(), 0, newuvs, 0, newuvs.length);
-        newuvs[index] = uv;
-        return new Quad(vertPos, new UVs(newuvs), builder, blocklight, skylight);
+        Vec2[] newUvs = new Vec2[4];
+        System.arraycopy(getUvs().vectorize(), 0, newUvs, 0, newUvs.length);
+        newUvs[index] = uv;
+        return new Quad(vertPos, new UVs(newUvs), builder, blockLight, skylight);
     }
 
     public void compute() {
@@ -344,8 +350,8 @@ public class Quad {
             secondQuad[j2].setY(lerp(secondQuad[j1].y(), secondQuad[j2].y(), f));
             secondQuad[j2].setZ(lerp(secondQuad[j1].z(), secondQuad[j2].z(), f));
 
-            Quad q1 = new Quad(firstQuad, first.relativize(), builder, blocklight, skylight);
-            Quad q2 = new Quad(secondQuad, second.relativize(), builder, blocklight, skylight);
+            Quad q1 = new Quad(firstQuad, first.relativize(), builder, blockLight, skylight);
+            Quad q2 = new Quad(secondQuad, second.relativize(), builder, blockLight, skylight);
             return Pair.of(q1, q2);
         } else {
             return Pair.of(this, null);
@@ -367,21 +373,12 @@ public class Quad {
 
         for (int i = 0; i < 4; i++) {
             Vec2 normalized = new Vec2(normalize(s.getU0(), s.getU1(), vertUv[i].x), normalize(s.getV0(), s.getV1(), vertUv[i].y));
-            Vec2 uv;
-            switch (amount) {
-            case 1:
-                uv = new Vec2(normalized.y, 1 - normalized.x);
-                break;
-            case 2:
-                uv = new Vec2(1 - normalized.x, 1 - normalized.y);
-                break;
-            case 3:
-                uv = new Vec2(1 - normalized.y, normalized.x);
-                break;
-            default:
-                uv = new Vec2(normalized.x, normalized.y);
-                break;
-            }
+            Vec2 uv = switch (amount) {
+                case 1 -> new Vec2(normalized.y, 1 - normalized.x);
+                case 2 -> new Vec2(1 - normalized.x, 1 - normalized.y);
+                case 3 -> new Vec2(1 - normalized.y, normalized.x);
+                default -> new Vec2(normalized.x, normalized.y);
+            };
             uvs[i] = uv;
         }
         
@@ -389,7 +386,7 @@ public class Quad {
             uvs[i] = new Vec2(lerp(s.getU0(), s.getU1(), uvs[i].x), lerp(s.getV0(), s.getV1(), uvs[i].y));
         }
 
-        return new Quad(vertPos, uvs, builder, getUvs().getSprite(), blocklight, skylight);
+        return new Quad(vertPos, uvs, builder, getUvs().getSprite(), blockLight, skylight);
     }
 
     public Quad derotate() {
@@ -405,11 +402,11 @@ public class Quad {
         for (int i = 0; i < 4; i++) {
             uvs[i] = vertUv[(i + start) % 4];
         }
-        return new Quad(vertPos, uvs, builder, getUvs().getSprite(), blocklight, skylight);
+        return new Quad(vertPos, uvs, builder, getUvs().getSprite(), blockLight, skylight);
     }
 
-    public Quad setLight(int blocklight, int skylight) {
-        return new Quad(this.vertPos, uvs, builder, Math.max(this.blocklight, blocklight), Math.max(this.skylight, skylight));
+    public Quad setLight(int blockLight, int skylight) {
+        return new Quad(this.vertPos, uvs, builder, Math.max(this.blockLight, blockLight), Math.max(this.skylight, skylight));
     }
     
     @SuppressWarnings("null")
@@ -436,7 +433,7 @@ public class Quad {
                 case UV:
                     if (ele.getIndex() == 2) {
                         //Stuff for fullbright
-                        builder.put(i, ((float) blocklight * 0x20) / 0xFFFF, ((float) skylight * 0x20) / 0xFFFF);
+                        builder.put(i, ((float) blockLight * 0x20) / 0xFFFF, ((float) skylight * 0x20) / 0xFFFF);
                         break;
                     } else if (ele.getIndex() == 0) {
                         Vec2 uv = vertUv[v];
@@ -457,17 +454,17 @@ public class Quad {
         return transformUVs(sprite, CTMLogic.FULL_TEXTURE.normalize());
     }
     
-    public Quad transformUVs(TextureAtlasSprite sprite, ISubmap submap) {
-        return new Quad(vertPos, getUvs().transform(sprite, submap), builder, blocklight, skylight);
+    public Quad transformUVs(TextureAtlasSprite sprite, ISubmap subMap) {
+        return new Quad(vertPos, getUvs().transform(sprite, subMap), builder, blockLight, skylight);
     }
     
     public Quad grow() {
-        return new Quad(vertPos, getUvs().normalizeQuadrant(), builder, blocklight, skylight);
+        return new Quad(vertPos, getUvs().normalizeQuadrant(), builder, blockLight, skylight);
     }
 
     @Deprecated
     public Quad setFullbright(boolean fullbright){
-        if (this.blocklight == 15 != fullbright || this.skylight == 15 != fullbright) {
+        if (this.blockLight == 15 != fullbright || this.skylight == 15 != fullbright) {
             return new Quad(vertPos, getUvs(), builder, fullbright);
         } else {
             return this;

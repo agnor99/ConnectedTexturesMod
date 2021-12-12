@@ -2,7 +2,6 @@ package team.chisel.ctm.client.texture.type;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import com.mojang.math.Vector3d;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -77,12 +76,12 @@ public class TextureTypeEdges extends TextureTypeCTM {
         }
         
         @Override
-        protected void fillSubmaps(int idx) {
+        protected void fillSubMaps(int idx) {
             Dir[] dirs = submapMap[idx];
             if (!connectedOr(dirs[0], dirs[1]) && connected(dirs[2])) {
-                submapCache[idx] = submapOffsets[idx];
+                subMapCache[idx] = subMapOffsets[idx];
             } else {
-                super.fillSubmaps(idx);
+                super.fillSubMaps(idx);
             }
         }
         

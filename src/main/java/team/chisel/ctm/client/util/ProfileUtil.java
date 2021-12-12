@@ -8,7 +8,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 
 public class ProfileUtil {
     
-    private static ThreadLocal<ProfilerFiller> profiler = ThreadLocal.withInitial(() -> {
+    private static final ThreadLocal<ProfilerFiller> profiler = ThreadLocal.withInitial(() -> {
         if (Thread.currentThread().getId() == 1) {
             return Minecraft.getInstance().getProfiler();
         } else {
